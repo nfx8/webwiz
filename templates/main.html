@@ -1,0 +1,221 @@
+
+{% extends "bootstrap_responsive.html" %}
+
+
+{% block body_content %}
+
+<!-- all the libs -->
+<script src="/static/d3.js" type="text/javascript"></script>
+<!-- https://raw.github.com/mbostock/d3/master/d3.js -->
+
+<script src="/static/science.v1.js"></script>
+
+<script src="/static/jquery-1.9.1.js"></script>
+
+
+<script src="/static/startview.js" type="text/javascript"></script>
+
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+                   
+
+          <a class="brand" href="#">webwiz</a>
+
+          <div class="nav-collapse">
+
+              <ul class="nav">
+                 {% for href, id, caption in navigation_bar %}
+                <li{% if id == active_page %} class="active"{% endif%}><a href="{{ href|e }}"><span>{{ caption|e }}</span>
+              </a></li>
+                {% endfor %}
+
+
+
+
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+<!--/nav -->
+
+<style>
+
+table th {
+  font-weight:800;
+}
+
+</style>
+
+<div class="container-fluid">
+  
+    <h2 style="margin-left:230px">Interactive graph </h2>
+
+
+
+<!-- bootstrap has scaffoling 
+see http://twitter.github.io/bootstrap/scaffolding.html
+-->
+
+<div class="row">
+
+  <div class="span8">
+
+        <!-- magic area -->
+         <p id="graph_header" style="margin-left:260px">to get started pick a distribution</p>
+
+        <div id="graph" width="500" height="500"><svg></div>
+        
+    </div>
+
+  <div class="span4">
+
+
+            <h3>Input</h3>
+
+
+<div class="btn-group">
+  <button class="btn dropdown-toggle" data-toggle="dropdown">Distributions <span class="caret"></span></button>
+  <ul class="dropdown-menu">
+    <li><a href="#" id="action-linear">Linear</a></li>
+    <li><a href="#" id="action-random">Random</a></li>
+    <li><a href="#" id="action-gauss">Gauss</a></li>
+  </ul>
+</div><!-- /btn-group -->
+
+
+        <br><br>
+        <h4>Regression</h4>
+        <div class="btn-group" data-toggle="buttons-radio">
+          <button type="button" class="btn btn-primary" value="linreg">Linear </button>
+
+        </div>
+
+
+
+        <h3>Stat info</h3>
+        
+        
+        <table cellpadding="10" border="1">
+          <tr>
+            <td><div id="count" >selected #</div>   </td>
+            <td><div id="x_avgstat" >avg x</div></td>
+            <td><div id="y_avgstat" >avg y</div></td>
+          </tr>  
+
+       </table>
+<hr>
+  <h3>Regression</h3>
+
+        <table cellpadding="10" border="1">
+          <tr><th>Metric</th><th>Value All</th> <th>Value selection</th></tr>
+          <tr>
+            <td>slope</td><td><div id="slope_all" ></div>   </td> <td> <div id="slope_selected" ></div>   </td>  </tr>
+
+           
+            <tr><td>std error</td><td><div id="std_err_all" >  </div></td>  <td> <div id="std_err_selected" ></div>   </td>  </tr>
+
+            <td>R squared</td><td><div id="r_value_all" > </div>   </td>  <td> <div id="r_value_selected" ></div>   </td>   </tr>
+            
+          </tr>  
+
+       </table>      
+
+
+          <!--
+            <div style="color:blue"><p id="x_medianstat" >median x</p></div>
+
+
+            <div style="color:blue"><p id="y_avgstat" >avg y</p></div>
+            <div style="color:blue"><p id="y_medianstat" >median y</p></div>
+      -->
+
+<!--
+        <h3>Mouse info</h3>
+        
+        <p id="xpos">x: 0 y: 0</p>
+
+            <div style="color:grey"><p id="downflag" ></p></div>
+
+         
+            <div style="color:grey"><p id="upflag" ></p></div>  
+
+         
+            <div style="color:grey"><p id="deltax" ></p></div>
+
+         
+            <div style="color:grey"><p id="deltay" ></p></div>        
+-->
+
+<hr>
+         <h3>Description</h3>
+            <p id="description">Pick a distribution</p>
+
+    
+  </div>
+
+       
+
+<!-- /. container -->
+</div>
+
+
+
+  <script>
+
+jQuery("#action-linear").click(function(e){
+
+  var circledata = linearData();
+          d3.select('#description').text("some linear points");
+
+            d3.select('body').select('#graph_header').text("");
+
+          
+          drawPlot(circledata);
+
+});
+
+jQuery("#action-random").click(function(e){
+   var circledata = randomData();
+            drawPlot(circledata);
+            d3.select('#description').text("random distribution");
+            d3.select('body').select('#graph_header').text("");
+});
+
+jQuery("#action-gauss").click(function(e){
+
+          d3.select('#description').text("Carl Friedrich Gauss");
+          d3.select('body').select('#graph_header').text("");
+          var circledata = gaussianData();
+          drawPlot(circledata);
+           //drawLoess();
+
+});
+
+    $("button").click(function () {
+
+        
+    });
+</script>
+
+
+
+
+
+    
+
+
+
+
+    
+
+{% endblock %}
+
