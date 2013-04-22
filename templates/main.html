@@ -13,7 +13,7 @@
 <script src="/static/jquery-1.9.1.js"></script>
 
 
-<script src="/static/startview.js" type="text/javascript"></script>
+<script src="/static/mainview.js" type="text/javascript"></script>
 
 
     <div class="navbar navbar-fixed-top">
@@ -47,6 +47,7 @@
 
 <!--/nav -->
 
+
 <style>
 
 table th {
@@ -55,121 +56,116 @@ table th {
 
 </style>
 
-<div class="container-fluid">
-  
-    <h2 style="margin-left:230px">Interactive graph </h2>
-
-
 
 <!-- bootstrap has scaffoling 
 see http://twitter.github.io/bootstrap/scaffolding.html
 -->
 
+
+<div class="container-fluid">
+  
+    <h2 style="margin-left:230px">Interactive graph </h2>
+
+
 <div class="row">
 
   <div class="span8">
 
-        <!-- magic area -->
+        <!-- main area -->
+
+
          <p id="graph_header" style="margin-left:260px">to get started pick a distribution</p>
 
+         <!-- this is an svg element which is filled by the javascript code -->
+
         <div id="graph" width="500" height="500"><svg></div>
+
         
     </div>
 
-  <div class="span4">
 
+  <div class="span4">
 
             <h3>Input</h3>
 
 
-<div class="btn-group">
-  <button class="btn dropdown-toggle" data-toggle="dropdown">Distributions <span class="caret"></span></button>
-  <ul class="dropdown-menu">
-    <li><a href="#" id="action-linear">Linear</a></li>
-    <li><a href="#" id="action-random">Random</a></li>
-    <li><a href="#" id="action-gauss">Gauss</a></li>
-  </ul>
-</div><!-- /btn-group -->
+      <div class="btn-group">
+        <button class="btn dropdown-toggle" data-toggle="dropdown">Distributions <span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><a href="#" id="action-linear">Linear</a></li>
+          <li><a href="#" id="action-random">Random</a></li>
+          <li><a href="#" id="action-gauss">Gauss</a></li>
+        </ul>
+      </div><!-- /btn-group -->
 
 
-        <br><br>
-        <h4>Regression</h4>
-        <div class="btn-group" data-toggle="buttons-radio">
-          <button type="button" class="btn btn-primary" value="linreg">Linear </button>
+              <br><br>
+              <h4>Regression</h4>
+              <div class="btn-group" data-toggle="buttons-radio">
+                <button type="button" class="btn btn-primary" value="linreg">Linear </button>
 
-        </div>
+              </div>
 
 
+              <h3>Stat info</h3>
+              
+              
+              <table cellpadding="10" border="1">
+                <tr>
+                  <td><div id="count" >selected #</div>   </td>
+                  <td><div id="x_avgstat" >avg x</div></td>
+                  <td><div id="y_avgstat" >avg y</div></td>
+                </tr>  
 
-        <h3>Stat info</h3>
-        
-        
-        <table cellpadding="10" border="1">
-          <tr>
-            <td><div id="count" >selected #</div>   </td>
-            <td><div id="x_avgstat" >avg x</div></td>
-            <td><div id="y_avgstat" >avg y</div></td>
-          </tr>  
+             </table>
+      <hr>
+        <h3>Regression</h3>
 
-       </table>
-<hr>
-  <h3>Regression</h3>
+              <table cellpadding="10" border="1">
+                <tr><th>Metric</th><th>Value All</th> <th>Value selection</th></tr>
+                <tr>
+                  <td>slope</td><td><div id="slope_all" ></div>   </td> <td> <div id="slope_selected" ></div>   </td>  </tr>
 
-        <table cellpadding="10" border="1">
-          <tr><th>Metric</th><th>Value All</th> <th>Value selection</th></tr>
-          <tr>
-            <td>slope</td><td><div id="slope_all" ></div>   </td> <td> <div id="slope_selected" ></div>   </td>  </tr>
+                 
+                  <tr><td>std error</td><td><div id="std_err_all" >  </div></td>  <td> <div id="std_err_selected" ></div>   </td>  </tr>
 
-           
-            <tr><td>std error</td><td><div id="std_err_all" >  </div></td>  <td> <div id="std_err_selected" ></div>   </td>  </tr>
+                  <td>R squared</td><td><div id="r_value_all" > </div>   </td>  <td> <div id="r_value_selected" ></div>   </td>   </tr>
+                  
+                </tr>  
 
-            <td>R squared</td><td><div id="r_value_all" > </div>   </td>  <td> <div id="r_value_selected" ></div>   </td>   </tr>
-            
-          </tr>  
-
-       </table>      
+             </table>      
 
 
           <!--
-            <div style="color:blue"><p id="x_medianstat" >median x</p></div>
+                  <h3>Mouse info</h3>
+                  
+                  <p id="xpos">x: 0 y: 0</p>
+
+                      <div style="color:grey"><p id="downflag" ></p></div>
+
+                   
+                      <div style="color:grey"><p id="upflag" ></p></div>  
+
+                   
+                      <div style="color:grey"><p id="deltax" ></p></div>
+
+                   
+                      <div style="color:grey"><p id="deltay" ></p></div>        
+          -->
 
 
-            <div style="color:blue"><p id="y_avgstat" >avg y</p></div>
-            <div style="color:blue"><p id="y_medianstat" >median y</p></div>
-      -->
-
-<!--
-        <h3>Mouse info</h3>
-        
-        <p id="xpos">x: 0 y: 0</p>
-
-            <div style="color:grey"><p id="downflag" ></p></div>
-
-         
-            <div style="color:grey"><p id="upflag" ></p></div>  
-
-         
-            <div style="color:grey"><p id="deltax" ></p></div>
-
-         
-            <div style="color:grey"><p id="deltay" ></p></div>        
--->
-
-<hr>
+  <hr>
          <h3>Description</h3>
             <p id="description">Pick a distribution</p>
-
-    
+  
   </div>
 
        
-
 <!-- /. container -->
 </div>
 
 
-
-  <script>
+<script>
 
 jQuery("#action-linear").click(function(e){
 
@@ -205,14 +201,6 @@ jQuery("#action-gauss").click(function(e){
         
     });
 </script>
-
-
-
-
-
-    
-
-
 
 
     

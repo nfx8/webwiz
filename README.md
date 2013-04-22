@@ -3,6 +3,8 @@ webwiz
 
 using d3.js, flask to create complex interactions
 
+Starts with a impress.js demo page
+
 Requirements: 
 
 * python
@@ -14,4 +16,4 @@ Requirements:
 * science-js
 * flask-bootstrap
 
-Currently only reliable in Chrome
+Currently only reliable in Chrome.
