@@ -69,19 +69,19 @@ function makelinear(circledata, xoff, yoff, xvel, yvel){
                 "cy": y,
                 "radius": 10,
                 "color": circlecolor
-            };
-
-            circleData.push(d);
+            };   
+            circledata.push(d);
         }
     }
    
+   return circledata;
 }
 
 function linearData() {
 
-    var circleData = [];
+    var circledata = [];
 
-    circleData = makelinear(circleData, 20, 20, 60, 50);
+    circledata = makelinear(circledata, 20, 20, 60, 50);
 
     //circleData = makelinear(circleData, 20, 20, 60, 50);
 
@@ -90,7 +90,7 @@ function linearData() {
     //ircleData = makelinear(circleData, 20, 20, 60, 50);
 
 
-    return circleData;
+    return circledata;
 
 }
 
