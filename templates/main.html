@@ -12,7 +12,6 @@
 
 <script src="/static/jquery-1.9.1.js"></script>
 
-
 <script src="/static/mainview.js" type="text/javascript"></script>
 
 
@@ -75,7 +74,7 @@ see http://twitter.github.io/bootstrap/scaffolding.html
         <!-- main area -->
 
 
-         <p id="graph_header" style="margin-left:260px">to get started pick a distribution</p>
+         <p id="graph_header" style="margin-left:230px">to get started pick a distribution</p>
 
          <!-- this is an svg element which is filled by the javascript code -->
 
@@ -115,7 +114,7 @@ see http://twitter.github.io/bootstrap/scaffolding.html
                <br> <br>
                
                     <div class="btn-group" id="button-go">
-                <button type="button" class="btn btn-primary" id="action-generate">Go</button>
+                <button type="button" class="btn btn-primary" id="action-generate">Generate</button>
                 </div>
                 
         
@@ -125,25 +124,14 @@ see http://twitter.github.io/bootstrap/scaffolding.html
                 <button class="btn dropdown-toggle" data-toggle="dropdown">Distributions <span class="caret"></span></button>
                 <ul class="dropdown-menu">
                   <li><a href="#" id="action-gauss">Gauss</a></li>
+                  <li><a href="#" id="action-regexample">Regression Skew</a></li>
                 </ul>
               </div><!-- /btn-group -->
 
 
 
-              <hr>
-              <h3>Stat info</h3>
-              
-              
-              <table cellpadding="10" border="1">
-                <tr>
-                  <td><div id="count" >selected #</div>   </td>
-                  <td><div id="x_avgstat" >avg x</div></td>
-                  <td><div id="y_avgstat" >avg y</div></td>
-                </tr>  
-
-             </table>
-      <hr>
-        <h3>Regression</h3>
+            <hr>
+              <h3>Regression</h3>
 
               <table cellpadding="10" border="1">
                 <tr><th>Metric</th><th>Value All</th> <th>Value selection</th></tr>
@@ -153,11 +141,27 @@ see http://twitter.github.io/bootstrap/scaffolding.html
                  
                   <tr><td>std error</td><td><div id="std_err_all" >  </div></td>  <td> <div id="std_err_selected" ></div>   </td>  </tr>
 
-                  <td>R squared</td><td><div id="r_value_all" > </div>   </td>  <td> <div id="r_value_selected" ></div>   </td>   </tr>
+                  <td>R^2</td><td><div id="r_value_all" > </div>   </td>  <td> <div id="r_value_selected" ></div>   </td>   </tr>
                   
                 </tr>  
 
-             </table>      
+             </table>  
+
+
+              <hr>
+              <h3>Selection info</h3>
+              
+              
+              <table cellpadding="10" border="1">
+                <tr>
+                  <td>selected</td><td><div id="count" >#</div>   </td></tr>
+                  <tr><td>avg x</td><td><div id="x_avgstat" >.</div></td></tr>
+                  <tr><td>avg y</td><td><div id="y_avgstat" >.</div></td></tr>
+                  <tr><td>distribution</td><td><div id="action" >.</div></td></tr>
+
+                
+
+             </table>    
 
 
           <!--
@@ -196,6 +200,8 @@ jQuery("#action-generate").click(function(e){
 
   //$(this).button('loading');
 
+
+
   var num = ($("#button-size .active").data("value"));
   
   
@@ -203,20 +209,27 @@ jQuery("#action-generate").click(function(e){
   var disttype = ($("#button-randomness .active").data("value"));
 
   if (disttype == "no"){
-          
+  
+    d3.select('#action').text('no ' + num + ' points');
+
     genRandom(0,num)
 
   }
 
 
   if (disttype == "some"){   
+    d3.select('#action').text('some ' + num + ' points');
     genRandom(30,num);
   }
 
 
    if (disttype =="more"){    
+     d3.select('#action').text('more ' + num + ' points');
     genRandom(60,num);
   }
+
+
+  d3.select('#graph_header').text('you can select some points');
 
 
 
@@ -248,6 +261,18 @@ function genRandom(beta,num){
 }
 
 
+function generateSkewDist(beta,num){
+    var circledata = linearData();
+    $.post("/distskew/", {
+        vals: JSON.stringify({'beta':beta,'size':num})
+
+    }, function (data) {
+
+        var resultDict = jQuery.parseJSON(data);
+                
+         drawPlot(resultDict["values"]);
+    });
+}
 
 
 
@@ -261,10 +286,19 @@ jQuery("#action-gauss").click(function(e){
 
 });
 
-    $("button").click(function () {
 
-        
-    });
+
+jQuery("#action-regexample").click(function(e){
+
+    var num = 20;
+    d3.select('#action').text('more ' + num + ' points');
+    generateSkewDist(0,num);
+
+});
+
+
+
+
 </script>
 
 

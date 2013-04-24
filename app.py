@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import os
-from flask import Flask, render_template
-from flask.ext.bootstrap import Bootstrap
-from flask import request
 import json
 import random
 
+from flask import Flask, render_template
+from flask.ext.bootstrap import Bootstrap
+from flask import request
+
+# simple regression instead of numpy which always has install issues
 from linear_regression import *
 
+
+#-- define app configs
 app = Flask(__name__)
 Bootstrap(app)
 app.config['BOOTSTRAP_USE_CDN'] = True
@@ -17,6 +22,8 @@ nav_bar = [
 ('/main/', 'main', 'main'),
 ('/about/', 'about', 'about')]
 
+
+#--- main views
 
 @app.route('/')
 def start():
@@ -33,11 +40,11 @@ def about():
 
 
 
-#expose some statistic functions via AJAX
-#this is the hard part, pushing data through from d3 to server side
+#--- server side functions
 
 def get_linear_reg(x,y):    
 
+    #prepare data
     datalist = []
     for i in range(len(x)):
         datalist.append(datapoint([x[i],y[i]]))
@@ -46,32 +53,31 @@ def get_linear_reg(x,y):
 
     [a,b,pearson_r,sum_err] =  linear_reg(data)
 
-
     result = dict()
     result['slope'] = round(b,3)
     result['intercept'] = round(a,3)
     result['r_value'] = round(pearson_r,3)
     result['p_value'] = -1.0
     result['std_err'] = round(sum_err,3)
+    result['avgx'] = int(get_avg(x))
+    result['avgy'] = int(get_avg(y))
+
 
     return result
-
 
 def get_avg(vals):  
     sumv = sum(vals)
     n = float(len(vals)) 
-    return round(sumv/n,3)    
-
+    return round(sumv/n,3)
 
 def get_median(vals):
     n = len(vals)
-    midpoint = int(round(n/2,0))
+    midpoint = int(round(n/2,0)) # when length is odd always choose the upper element
     return round(vals[midpoint],3)    
 
 
-
 def random_data(factor,size):
-    #data = sample_data()
+    """ some random data along a line """
     data = list()
     a = 3
     b = 10
@@ -79,15 +85,40 @@ def random_data(factor,size):
         d = {'x':i+a, 'y': i+b + random.random()*factor} 
         data.append(d)
 
-    #s = json.dumps(data)
     return data
 
 
+def random_data_skew(factor):
+    """ some random data along a line """
+    data = list()
+    a = 3
+    b = 10
+    size = 20
+    for i in range(size):
+        d = {'x':i+a, 'y': i+b + random.random()*factor} 
+        data.append(d)
+
+    data.append({'x':5, 'y': 22})
+    data.append({'x':6, 'y': 23})
+    data.append({'x':7, 'y': 21})
+    data.append({'x':8, 'y': 25})
+
+    data.append({'x':20, 'y': 17})
+    data.append({'x':21, 'y': 18})
+    data.append({'x':22, 'y': 16})
+    data.append({'x':23, 'y': 19})
+    return data
+
+
+#--- expose some statistic functions via AJAX
+#this is the hard part, pushing data through from d3 to server side
+#easy things could be done on the client instead (using science.js for example)
 
 @app.route('/data/')
 def get_data():
+    """ get data from server """
     return json.dumps(random_data(20))
-    #return json.dumps({'values':get_groesse_KA()})
+
 
 @app.route('/dist/',methods=['POST'])
 def dist():
@@ -98,8 +129,18 @@ def dist():
         s = json.dumps(rd)
         return s 
 
+@app.route('/distskew/',methods=['POST'])
+def skewdist():
+    
+    if request.method == 'POST':          
+        vals = json.loads(request.form['vals'])
+        rd = {'values':    random_data_skew(vals["beta"])}
+        s = json.dumps(rd)
+        return s 
+
 @app.route('/stat/<statname>/',methods=['POST'])
 def show_stat_name(statname):
+    """ general statistic function """
     
     if request.method == 'POST':          
         vals = json.loads(request.form['vals'])
@@ -107,9 +148,6 @@ def show_stat_name(statname):
         xvals = [z["x"] for z in vals]
 
         yvals = [z["y"] for z in vals]
-
-        #print xvals,yvals
-
         
         s = ""
         if statname=='median':
@@ -124,5 +162,7 @@ def show_stat_name(statname):
         
         return s  
 
+
 if __name__ == '__main__':
-    app.run(debug=True, port=8080, host='0.0.0.0')
+    #run flask app with simple HTTP server. add your own server
+    app.run(debug=False, port=8080, host='0.0.0.0')

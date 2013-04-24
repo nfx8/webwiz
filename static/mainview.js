@@ -93,44 +93,7 @@ function linearData() {
 
     circledata = makelinear(circledata, 20, 20, 60, 50);
 
-    //circleData = makelinear(circleData, 20, 20, 60, 50);
-
-    //circleData = makelinear(circleData, 20, 20, 60, 50);
-
-    //ircleData = makelinear(circleData, 20, 20, 60, 50);
-
-
     return circledata;
-
-}
-
-
-function randomData() {
-
-
-    var circleData = [];
-
-
-    var xoff = 30;
-    var yoff = 20;
-    var xvel = 60;
-    var yvel = 50;
-    for (var i = 0; i < 20; i++) {
-
-        var x = (Math.random() * (w - 20)) + 20;
-        var y = (Math.random() * (h - 20)) + 20;
-        if ((x < w) && (y < h)) {
-
-            d = {
-                "x": x,
-                "y": y,
-            };
-
-            circleData.push(d);
-        }
-    }
-
-    return circleData;
 
 }
 
@@ -331,22 +294,37 @@ function drawPlot(circleData) {
     });
 
 
-    // here we pass data to the server, passing just the name of the function
+
+
+    // here we pass data to the server
+
 
     var a = 0;
     var b = 0;
 
+
+    // call the server with selected data
+    
     $.post("/stat/regression/", {
         vals: JSON.stringify(all_xy)
     }, function (data) {
 
-        var resultDict = jQuery.parseJSON(data);
+        var resultDict = jQuery.parseJSON(data);        
+
+        d3.select('#x_avgstat').text("avg x: " + resultDict["avgx"]);
+        
+        d3.select('#y_avgstat').text("avg y: " + resultDict["avgy"]);
 
         d3.select('#slope_all').text(resultDict["slope"]);
 
         d3.select('#std_err_all').text(resultDict["std_err"]);
 
         d3.select('#r_value_all').text(resultDict["r_value"]);
+
+        //d3.select('#y_medianstat').text("median y: " + data);
+        //d3.select('#x_medianstat').text("median x: " + data);
+
+
 
         a = resultDict["intercept"];
         b = resultDict["slope"];
@@ -369,7 +347,7 @@ function drawPlot(circleData) {
             }
         ];
 
-        //This is the accessor function we talked about above
+        
         var lineFunction = d3.svg.line()
             .x(function (d) {
             return xscale(d.x);
@@ -380,7 +358,7 @@ function drawPlot(circleData) {
             .interpolate("linear");
 
 
-        //The line SVG Path we draw
+        
         var lineGraph = svgContainer.append("path")
             .attr("d", lineFunction(lineData))
             .attr("stroke", "red")
@@ -390,6 +368,7 @@ function drawPlot(circleData) {
 
 
     });
+    
 
 
 }
@@ -497,39 +476,29 @@ function up() {
     var deltay = Math.round(curY - startY, 3);
 
 
+   var maxx = d3.max($.map(selected_xy, function (d) {
+        return d.x;
+    }));
+    var minx = d3.min($.map(selected_xy, function (d) {
+        return d.x;
+    }));
+    var maxy = d3.max($.map(selected_xy, function (d) {
+        return d.y;
+    }));
+    var miny = d3.min($.map(selected_xy, function (d) {
+        return d.y;
+    }));
 
-    $.post("/stat/average/", {
-        vals: JSON.stringify(selected_xy)
-    }, function (data) {
-        d3.select('#x_avgstat').text("avg x: " + data);
-    });
-
-    $.post("/stat/median/", {
-        vals: JSON.stringify(selected_xy)
-    }, function (data) {
-        d3.select('#x_medianstat').text("median x: " + data);
-    });
-
-
-    $.post("/stat/average/", {
-        vals: JSON.stringify(selected_xy)
-    }, function (data) {
-        d3.select('#y_avgstat').text("avg y: " + data);
-    });
-
-    $.post("/stat/median/", {
-        vals: JSON.stringify(selected_xy)
-    }, function (data) {
-        d3.select('#y_medianstat').text("median y: " + data);
-    });
-
-
-    // do the regression analysis using scipy
+    // call the server with selected data
     $.post("/stat/regression/", {
         vals: JSON.stringify(selected_xy)
     }, function (data) {
 
-        var resultDict = jQuery.parseJSON(data);
+        var resultDict = jQuery.parseJSON(data);        
+
+        d3.select('#x_avgstat').text("avg x: " + resultDict["avgx"]);
+        
+        d3.select('#y_avgstat').text("avg y: " + resultDict["avgy"]);
 
         d3.select('#slope_selected').text(resultDict["slope"]);
 
@@ -537,8 +506,52 @@ function up() {
 
         d3.select('#r_value_selected').text(resultDict["r_value"]);
 
-    });
+        //d3.select('#y_medianstat').text("median y: " + data);
+        //d3.select('#x_medianstat').text("median x: " + data);
 
+
+        a = resultDict["intercept"];
+        b = resultDict["slope"];
+
+
+
+        //The data for our line
+        var reglineX1 = minx;
+        var reglineY1 = minx * b + a;
+
+        var reglineX2 = maxx;
+        var reglineY2 = maxx * b + a;
+
+        var lineData = [{
+                "x": reglineX1,
+                "y": reglineY1
+            }, {
+                "x": reglineX2,
+                "y": reglineY2
+            }
+        ];
+
+        
+        var lineFunction = d3.svg.line()
+            .x(function (d) {
+            return xscale(d.x);
+        })
+            .y(function (d) {
+            return yscale(d.y);
+        })
+            .interpolate("linear");
+
+
+        svgContainer.select('#selectedregline').remove();
+
+        
+        var lineGraph = svgContainer.append("path")
+            .attr("d", lineFunction(lineData))
+            .attr("stroke", "green")
+            .attr("stroke-width", 2)
+            .attr("fill", "none")
+            .attr("id","selectedregline");
+    });
 
 
 
@@ -594,3 +607,36 @@ function toggleFullScreen() {
         }
     }
 }
+
+
+/*
+// client side random data
+function randomData() {
+
+
+    var circleData = [];
+
+
+    var xoff = 30;
+    var yoff = 20;
+    var xvel = 60;
+    var yvel = 50;
+    for (var i = 0; i < 20; i++) {
+
+        var x = (Math.random() * (w - 20)) + 20;
+        var y = (Math.random() * (h - 20)) + 20;
+        if ((x < w) && (y < h)) {
+
+            d = {
+                "x": x,
+                "y": y,
+            };
+
+            circleData.push(d);
+        }
+    }
+
+    return circleData;
+
+}
+*/

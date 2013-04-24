@@ -14,15 +14,11 @@
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
+
           <a class="brand" href="#">webwiz</a>
 
           <div class="nav-collapse">
-
+            <!-- generate nav using flask template system -->
               <ul class="nav">
                  {% for href, id, caption in navigation_bar %}
                 <li{% if id == active_page %} class="active"{% endif%}><a href="{{ href|e }}"><span>{{ caption|e }}</span>
@@ -42,10 +38,16 @@
   <div class="container-fluid">
   
     <h2>about</h2>
-    <p>This demo shows off some combination of "technologies".
-      <br>
+    <p>This demo shows off a combination of "technologies". (The term techne orginates from Aristotle's ethics, where it means art or craft).
       
-      Instead of just displaying data one can have interactive charts. This is work in progress as only some of the potential is shown.
+      
+      <p>Instead of just displaying data one can have interactive charts. This is work in progress as only some of the potential is shown. 
+      These are mostly conventions, but finding natural interactions is difficult. As Bret Victor points out mathematics traditionally
+      focus on static calculations. The output of regression is used with one or two metrics (correlation coefficient). But these
+      are often subject to selection decisions. Generally software can show the dynamics, but traditional packages only display outputs.
+    </p>
+      <br>
+
 
     </p>
     </p>
