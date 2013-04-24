@@ -8,7 +8,6 @@
 
 */
 
-
 $(document).ready(function () {
 
 
@@ -19,14 +18,28 @@ $(document).ready(function () {
 
     }, false);
 
-    
+
     resetContainer();
-     
+
+
+    /*
+      $.get("/data/",function (data){
+          
+          var resultDict = jQuery.parseJSON(data);
+                   
+          drawPlot(resultDict);
+      });
+*/
+
+
+
 });
 
 
 
 var svgContainer;
+
+var xscale, yscale;
 
 var startX, startY, endX, endY;
 
@@ -46,7 +59,6 @@ var all_xy = [];
 var selected_xy = [];
 
 
-//Width and height
 var circlecolor = d3.rgb(0, 0, 80);
 var selectcolor = d3.rgb(50, 150, 255);
 
@@ -57,24 +69,22 @@ var w = 700;
 var h = 600;
 
 
-function makelinear(circledata, xoff, yoff, xvel, yvel){
+function makelinear(circledata, xoff, yoff, xvel, yvel) {
     //create some linear data
 
-   for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 10; i++) {
         var x = i * xvel + xoff;
         var y = i * yvel + yoff;
         if (x < w) {
             d = {
-                "cx": x,
-                "cy": y,
-                "radius": 10,
-                "color": circlecolor
-            };   
+                "x": x,
+                "y": y,
+            };
             circledata.push(d);
         }
     }
-   
-   return circledata;
+
+    return circledata;
 }
 
 function linearData() {
@@ -112,10 +122,8 @@ function randomData() {
         if ((x < w) && (y < h)) {
 
             d = {
-                "cx": x,
-                "cy": y,
-                "radius": 10,
-                "color": circlecolor
+                "x": x,
+                "y": y,
             };
 
             circleData.push(d);
@@ -129,29 +137,27 @@ function randomData() {
 
 
 function gaussianData() {
+    // client side for now
 
+    var circleData = [];
 
-  var circleData = [];
-
-  var gauss = science.stats.distribution.gaussian();
+    var gauss = science.stats.distribution.gaussian();
 
     var xoff = 30;
     var yoff = 20;
     var xvel = 60;
     var yvel = 50;
     for (var i = 0; i < 40; i++) {
-        
-        var j = (i-20)/4;
-        var x = j*70 + 350;
-        var y =  -gauss.pdf(j)*1200 + 550;
-                   
+
+        var j = (i - 20) / 4;
+        var x = j * 70 + 350;
+        var y = gauss.pdf(j);
+
         if ((x < w) && (y < h)) {
 
             d = {
-                "cx": x,
-                "cy": y,
-                "radius": 10,
-                "color": circlecolor
+                "x": x,
+                "y": y,
             };
 
             circleData.push(d);
@@ -164,11 +170,11 @@ function gaussianData() {
 
 
 
-function drawBox(svgContainer){
+function drawBox(svgContainer) {
 
     // borders of the svg box
 
-      var left = svgContainer.append("rect").attr("width", 1).attr("height", h)
+    var left = svgContainer.append("rect").attr("width", 1).attr("height", h)
         .attr("x", 0).attr("y", 0).attr("fill", d3.rgb(0, 20, 80)).attr("fill-opacity", 1.0);
 
     var right = svgContainer.append("rect").attr("width", 1).attr("height", h)
@@ -183,15 +189,15 @@ function drawBox(svgContainer){
 
     //selection box
     var box = svgContainer.append("rect").attr("width", w).attr("height", h)
-        .attr("x", 0).attr("y", 0).attr("fill", d3.rgb(0, 20, 80)).attr("fill-opacity", 0.00);        
+        .attr("x", 0).attr("y", 0).attr("fill", d3.rgb(0, 20, 80)).attr("fill-opacity", 0.00);
 
 }
 
 
-function resetContainer(){
-  /*create new svg element , just to be safe */
+function resetContainer() {
+    /*create new svg element , just to be safe */
 
-      var main = d3.select('body').select('#graph');
+    var main = d3.select('body').select('#graph');
 
     main.select("svg")
         .remove();
@@ -202,33 +208,89 @@ function resetContainer(){
 
 }
 
+function customAxis() {
+    // create left yAxis
+    var yAxisLeft = d3.svg.axis().scale(yscale).ticks(4).orient("left");
+    // Add the y-axis to the left
+    svgContainer.append("svg:g")
+        .attr("class", "y axis axisLeft")
+        .attr("transform", "translate(45,0)")
+        .call(yAxisLeft);
+
+    var xAxis = d3.svg.axis().scale(xscale).tickSize(10).tickSubdivide(true);
+    // Add the x-axis.
+    svgContainer.append("svg:g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + 580 + ")")
+        .call(xAxis);
+
+
+    svgContainer.append("text") // text label for the x axis
+    .attr("x", 265)
+        .attr("y", 20)
+        .style("text-anchor", "middle")
+        .style("font-size", "1.3em")
+        .text("Groesse");
+
+
+    svgContainer.append("text") // text label for the x axis
+    .attr("x", 140)
+        .attr("y", 400)
+        .style("text-anchor", "middle")
+        .style("font-size", "1.3em")
+        .text("Untersuchungszeit");
+}
 
 function drawPlot(circleData) {
-  
 
-   resetContainer();
-   resetInfo();
+
+    resetContainer();
+    resetInfo();
 
     xpos_label = d3.select('body').select('#xpos');
+
+    var maxx = d3.max($.map(circleData, function (d) {
+        return d.x;
+    }));
+    var minx = d3.min($.map(circleData, function (d) {
+        return d.x;
+    }));
+    var maxy = d3.max($.map(circleData, function (d) {
+        return d.y;
+    }));
+    var miny = d3.min($.map(circleData, function (d) {
+        return d.y;
+    }));
+
+
+    var sideoffset = 20;
+    xscale = d3.scale.linear().domain([minx, maxx]).range([sideoffset, w - sideoffset]);
+
+    yscale = d3.scale.linear().domain([miny, maxy]).range([h - sideoffset, sideoffset]);
+
+
+
 
     var box = svgContainer.append("rect").attr("width", w).attr("height", h)
         .attr("x", 0).attr("y", 0).attr("fill", d3.rgb(0, 20, 80)).attr("fill-opacity", 0.00);
 
+    var fixedradius = 10.0;
 
     circles = svgContainer.selectAll("circle")
         .data(circleData)
         .enter()
         .append("circle");
 
+
     var circleAttributes = circles
         .attr("cx", function (d) {
-        return d.cx;
+        return xscale(d.x);
     })
         .attr("cy", function (d) {
-        return d.cy;
+        return yscale(d.y);
     })
         .attr("r", function (d) {
-        return d.radius;
+        return fixedradius;
     })
         .style("fill", function (d) {
         return circlecolor;
@@ -236,7 +298,7 @@ function drawPlot(circleData) {
 
 
     //Add some text (not used)
-          /*
+    /*
       var text = svgContainer.selectAll("text")
                               .data(circleData)
                              .enter()
@@ -261,30 +323,75 @@ function drawPlot(circleData) {
     selectBox = svgContainer.append("rect").attr("width", 100).attr("height", 100)
         .attr("x", 100).attr("y", 100).attr("fill", selectbox_color).attr("fill-opacity", 0.08);
 
- 
-     all_xy = [];
-    
-    circles.select(function(d,i) {            
+
+    all_xy = [];
+
+    circles.select(function (d, i) {
         all_xy.push(d);
     });
 
 
     // here we pass data to the server, passing just the name of the function
 
+    var a = 0;
+    var b = 0;
+
     $.post("/stat/regression/", {
         vals: JSON.stringify(all_xy)
     }, function (data) {
-        
+
         var resultDict = jQuery.parseJSON(data);
-        
+
         d3.select('#slope_all').text(resultDict["slope"]);
 
-        d3.select('#std_err_all').text(resultDict["std_err"]);      
+        d3.select('#std_err_all').text(resultDict["std_err"]);
 
-        d3.select('#r_value_all').text(resultDict["r_value"]);      
+        d3.select('#r_value_all').text(resultDict["r_value"]);
 
-        
+        a = resultDict["intercept"];
+        b = resultDict["slope"];
+
+
+
+        //The data for our line
+        var reglineX1 = minx;
+        var reglineY1 = minx * b + a;
+
+        var reglineX2 = maxx;
+        var reglineY2 = maxx * b + a;
+
+        var lineData = [{
+                "x": reglineX1,
+                "y": reglineY1
+            }, {
+                "x": reglineX2,
+                "y": reglineY2
+            }
+        ];
+
+        //This is the accessor function we talked about above
+        var lineFunction = d3.svg.line()
+            .x(function (d) {
+            return xscale(d.x);
+        })
+            .y(function (d) {
+            return yscale(d.y);
+        })
+            .interpolate("linear");
+
+
+        //The line SVG Path we draw
+        var lineGraph = svgContainer.append("path")
+            .attr("d", lineFunction(lineData))
+            .attr("stroke", "red")
+            .attr("stroke-width", 2)
+            .attr("fill", "none");
+
+
+
     });
+
+
 }
 
 
@@ -344,18 +451,18 @@ function move() {
         circles.style("fill", circlecolor);
 
 
-        var curX = d3.mouse(this)[mxpos];
-        var curY = d3.mouse(this)[mypos];
         var minx = startX < curX ? startX : curX;
         var maxx = startX < curX ? curX : startX;
         var miny = startY < curY ? startY : curY;
         var maxy = startY < curY ? curY : startY;
 
 
-        // select based on x y coordinates
+        // select based on x y scaled coordinates
+        // map data to mouse coords and compare those to actual mouse movements
         selected_circles = circles.select(function (d, i) {
 
-            var hit = d["cx"] > minx && d["cx"] < maxx && d["cy"] > miny && d["cy"] < maxy;
+            var hit = xscale(d["x"]) > minx && xscale(d["x"]) < maxx && yscale(d["y"]) > miny && yscale(d["y"]) < (maxy);
+
             return hit ? this : null;
         });
 
@@ -421,16 +528,19 @@ function up() {
     $.post("/stat/regression/", {
         vals: JSON.stringify(selected_xy)
     }, function (data) {
-        
+
         var resultDict = jQuery.parseJSON(data);
-        
+
         d3.select('#slope_selected').text(resultDict["slope"]);
 
-        d3.select('#std_err_selected').text(resultDict["std_err"]);      
+        d3.select('#std_err_selected').text(resultDict["std_err"]);
 
-        d3.select('#r_value_selected').text(resultDict["r_value"]);      
-        
+        d3.select('#r_value_selected').text(resultDict["r_value"]);
+
     });
+
+
+
 
 
     d3.select('#count').text("selected: " + selected_xy.length);
@@ -442,6 +552,7 @@ function up() {
 
     selectBox.attr("width", 0);
     selectBox.attr("height", 0);
+
 
 
     //setTimeout(resetInfo, 1000);
@@ -456,9 +567,9 @@ function resetInfo() {
 
     d3.select('#slope_selected').text("");
 
-    d3.select('#std_err_selected').text("");      
+    d3.select('#std_err_selected').text("");
 
-    d3.select('#r_value_selected').text("");     
+    d3.select('#r_value_selected').text("");
 }
 
 
@@ -483,63 +594,3 @@ function toggleFullScreen() {
         }
     }
 }
-
-
-
-
-/*
-
-// TODO 
-// more complex things like filters, non-standard regression, local regression, etc.
-// can do this on the client or server side
-
-function  drawLoess(){
-
-// Copyright (c) 2011, Jason Davies
-//from https://github.com/jasondavies/science.js/blob/master/examples/loess/loess.js
-    
-
-    var  p = 30.5,
-      n = 100,
-      x = d3.scale.linear().range([0, w]),
-      y = d3.scale.linear().domain([-2.5, 1.5]).range([h, 0]);
-
-
-  var xAxis = d3.svg.axis().scale(x),
-      yAxis = d3.svg.axis().scale(y);
-
-  var temp = svgContainer.append('svg');
-
-  var vis = temp
-      .data([{
-        x: d3.range(n).map(function(i) { return (i / n); }),
-        y: d3.range(n).map(function(i) { return Math.sin(4 * i * Math.PI / n) + (Math.random() - .5) / 5; })
-      }])
-    .append("svg")
-      .attr("width", w + p + p)
-      .attr("height", h + p + p)
-    .append("g")
-      .attr("transform", "translate(" + p + "," + p + ")");
-
-  var loess = science.stats.loess().bandwidth(.2),
-      line = d3.svg.line()
-        .x(function(d) { 
-          selected_x.append(x(d[0]));
-          return x(d[0]); 
-        })
-        .y(function(d) { 
-          selected_y.append(x(d[1]));
-          return y(d[1]);
-         });
-
-  vis.selectAll("circle")
-      .data(function(d) { return d3.zip(d.x, d.y); })
-    .enter().append("circle")
-      .attr("cx", function(d) { return x(d[0]); })
-      .attr("cy", function(d) { return y(d[1]); })
-      .attr("r", 4);
-
-      drawBox(svgContainer);
-
-}
-*/

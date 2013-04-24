@@ -62,14 +62,15 @@ see http://twitter.github.io/bootstrap/scaffolding.html
 -->
 
 
-<div class="container-fluid">
+<div class="container-fluid" style="margin-top:-25px">
   
     <h2 style="margin-left:230px">Interactive graph </h2>
 
 
 <div class="row">
 
-  <div class="span8">
+  <div class="span8" style="padding:0 19px">
+
 
         <!-- main area -->
 
@@ -84,29 +85,52 @@ see http://twitter.github.io/bootstrap/scaffolding.html
     </div>
 
 
-  <div class="span4">
+  <div class="span3">
 
             <h3>Input</h3>
 
 
-      <div class="btn-group">
-        <button class="btn dropdown-toggle" data-toggle="dropdown">Distributions <span class="caret"></span></button>
-        <ul class="dropdown-menu">
-          <li><a href="#" id="action-linear">Linear</a></li>
-          <li><a href="#" id="action-random">Random</a></li>
-          <li><a href="#" id="action-gauss">Gauss</a></li>
-        </ul>
-      </div><!-- /btn-group -->
+              <h4>Randomness</h4>
+              <div class="btn-group" data-toggle="buttons-radio" id="button-randomness">
+                <button type="button" class="btn active" value="linreg" data-value="no">no </button>
 
+                <button type="button" class="btn " value="linreg" data-value="some">some </button>
 
-              <br><br>
-              <h4>Regression</h4>
-              <div class="btn-group" data-toggle="buttons-radio">
-                <button type="button" class="btn btn-primary" value="linreg">Linear </button>
+                <button type="button" class="btn " value="linreg" data-value="more">more </button>
 
               </div>
 
+              <h4>Number</h4>
+              
+              <div class="btn-group" data-toggle="buttons-radio" id="button-size">
 
+                <button type="button" class="btn active" data-value="10" id="size-few">few </button>
+
+                <button type="button" class="btn " data-value="30" id="size-plenty">plenty </button>
+
+                <button type="button" class="btn " data-value="100" id="size-many">many </button>
+
+              </div>
+
+               <br> <br>
+               
+                    <div class="btn-group" id="button-go">
+                <button type="button" class="btn btn-primary" id="action-generate">Go</button>
+                </div>
+                
+        
+
+                <br><br>
+                    <div class="btn-group">
+                <button class="btn dropdown-toggle" data-toggle="dropdown">Distributions <span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                  <li><a href="#" id="action-gauss">Gauss</a></li>
+                </ul>
+              </div><!-- /btn-group -->
+
+
+
+              <hr>
               <h3>Stat info</h3>
               
               
@@ -155,8 +179,7 @@ see http://twitter.github.io/bootstrap/scaffolding.html
 
 
   <hr>
-         <h3>Description</h3>
-            <p id="description">Pick a distribution</p>
+  
   
   </div>
 
@@ -167,24 +190,66 @@ see http://twitter.github.io/bootstrap/scaffolding.html
 
 <script>
 
-jQuery("#action-linear").click(function(e){
 
-  var circledata = linearData();
-          d3.select('#description').text("some linear points");
+jQuery("#action-generate").click(function(e){
 
-            d3.select('body').select('#graph_header').text("");
 
+  //$(this).button('loading');
+
+  var num = ($("#button-size .active").data("value"));
+  
+  
+  
+  var disttype = ($("#button-randomness .active").data("value"));
+
+  if (disttype == "no"){
           
-          drawPlot(circledata);
+    genRandom(0,num)
+
+  }
+
+
+  if (disttype == "some"){   
+    genRandom(30,num);
+  }
+
+
+   if (disttype =="more"){    
+    genRandom(60,num);
+  }
+
+
+
 
 });
 
-jQuery("#action-random").click(function(e){
-   var circledata = randomData();
-            drawPlot(circledata);
-            d3.select('#description').text("random distribution");
-            d3.select('body').select('#graph_header').text("");
-});
+function customDataset(){
+
+  $(this).button("reset");
+
+      $.get("/data/", function (data) {
+        var resultDict = jQuery.parseJSON(data);                
+         drawPlot(resultDict["values"]);
+    });
+}
+
+
+function genRandom(beta,num){
+    var circledata = linearData();
+    $.post("/dist/", {
+        vals: JSON.stringify({'beta':beta,'size':num})
+
+    }, function (data) {
+
+        var resultDict = jQuery.parseJSON(data);
+                
+         drawPlot(resultDict["values"]);
+    });
+}
+
+
+
+
 
 jQuery("#action-gauss").click(function(e){
 
