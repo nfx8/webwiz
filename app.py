@@ -9,7 +9,7 @@ from flask import Flask, render_template
 from flask.ext.bootstrap import Bootstrap
 from flask import request
 
-# simple regression instead of numpy which always has install issues
+# my simple regression (custom code)
 from linear_regression import *
 
 
