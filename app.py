@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# this is a flask python app
+# the interactive graph is in the mainview.js which calls server side functions for calculations via AJAX
+# this could be done on the client side, but the server side could introduce complex calculations
+
 import os
 import json
 import random
@@ -9,12 +13,13 @@ from flask import Flask, render_template
 from flask.ext.bootstrap import Bootstrap
 from flask import request
 
-# my simple stat custom code
+# my simple statistics custom code
 from linear_regression import *
 from simplestat import *
 
 
 #-- define app configs
+
 app = Flask(__name__)
 Bootstrap(app)
 app.config['BOOTSTRAP_USE_CDN'] = True
@@ -42,7 +47,7 @@ def about():
 
 #--- expose some statistic functions via AJAX
 #this is the hard part, pushing data through from d3 to server side
-#easy things could be done on the client instead (using science.js for example)
+#easy things could be done on the client instead (science.js is used for gaussian data)
 
 @app.route('/data/')
 def get_data():
@@ -52,7 +57,7 @@ def get_data():
 
 @app.route('/dist/',methods=['POST'])
 def dist():
-    
+    """ get the distribution of values based on randomness faktor and number of points """
     if request.method == 'POST':          
         vals = json.loads(request.form['vals'])
         rd = {'values':    random_data(vals["beta"],vals["size"])}
@@ -61,7 +66,7 @@ def dist():
 
 @app.route('/distskew/',methods=['POST'])
 def skewdist():
-    
+    """ a skewed distribution """
     if request.method == 'POST':          
         vals = json.loads(request.form['vals'])
         rd = {'values':    random_data_skew(vals["beta"])}
@@ -72,23 +77,25 @@ def skewdist():
 def show_stat_name(statname):
     """ general statistic function """
     
-    if request.method == 'POST':          
+    if request.method == 'POST':      
+        # values come as JSON dicts    
         vals = json.loads(request.form['vals'])
 
         xvals = [z["x"] for z in vals]
-
         yvals = [z["y"] for z in vals]
         
         s = ""
-        if statname=='median':
+        if statname=='regression':
+            s = json.dumps(get_linear_reg(xvals,yvals))
+
+        """
+        #not used currently    
+        elif statname=='median':
             s = json.dumps(get_median(xvals))
 
         elif statname=='average':
             s = json.dumps(get_avg(xvals))
-
-        elif statname=='regression':
-            s = json.dumps(get_linear_reg(xvals,yvals))
-
+        """
         
         return s  
 
