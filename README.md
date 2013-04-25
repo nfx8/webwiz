@@ -11,9 +11,7 @@ Requirements:
 * flask
 * d3.js
 * jquery
-* numpy
-* scipy
 * science-js
 * flask-bootstrap
 
-Currently only reliable in Chrome.
+Tested in Chrome Version 26.0. See d3.js for browser support details.
