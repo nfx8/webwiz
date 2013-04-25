@@ -74,11 +74,13 @@ see http://twitter.github.io/bootstrap/scaffolding.html
         <!-- main area -->
 
 
-         <p id="graph_header" style="margin-left:230px">to get started pick a distribution</p>
+         
 
          <!-- this is an svg element which is filled by the javascript code -->
 
-        <div id="graph" width="500" height="500"><svg></div>
+        <div id="graph" width="500" height="500"><p id="graph_header" style="margin-left:230px">to get started generate some points</p></div>
+
+        
 
         
     </div>
@@ -201,11 +203,9 @@ jQuery("#action-generate").click(function(e){
   //$(this).button('loading');
 
 
-
   var num = ($("#button-size .active").data("value"));
   
-  
-  
+    
   var disttype = ($("#button-randomness .active").data("value"));
 
   if (disttype == "no"){
@@ -229,7 +229,8 @@ jQuery("#action-generate").click(function(e){
   }
 
 
-  d3.select('#graph_header').text('you can select some points');
+  d3.select('body').select('#graph_header').text("select circles with click + move");
+  //d3.select('#graph_header').text('results based on selections to the right');
 
 
 
@@ -272,14 +273,18 @@ function generateSkewDist(beta,num){
                 
          drawPlot(resultDict["values"]);
     });
+    d3.select('body').select('#graph_header').text("select some points");
+    d3.select('#action').text('skewed regression');
 }
 
 
 
 jQuery("#action-gauss").click(function(e){
 
-          d3.select('#description').text("Carl Friedrich Gauss");
-          d3.select('body').select('#graph_header').text("");
+          //d3.select('#description').text("Carl Friedrich Gauss");
+          d3.select('#action').text('Gaussian');
+
+          d3.select('body').select('#graph_header').text("select some points");
           var circledata = gaussianData();
           drawPlot(circledata);
            //drawLoess();
@@ -292,6 +297,7 @@ jQuery("#action-regexample").click(function(e){
 
     var num = 20;
     d3.select('#action').text('more ' + num + ' points');
+    d3.select('body').select('#graph_header').text("select some points");
     generateSkewDist(0,num);
 
 });

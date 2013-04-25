@@ -8,6 +8,34 @@
 
 */
 
+
+function kde(sample) {
+  /* Epanechnikov kernel */
+  function epanechnikov(u) {
+    return Math.abs(u) <= 1 ? 0.75 * (1 - u*u) : 0;
+  };
+
+  var kernel = epanechnikov;
+  return {
+    scale: function(h) {
+      kernel = function (u) { return epanechnikov(u / h) / h; };
+      return this;
+    },
+
+    points: function(points) {
+      return points.map(function(x) {
+        var y = pv.sum(sample.map(function (v) {
+            alert(v);
+          return kernel(x - v);
+        })) / sample.length;
+        return {x: x, y: y};
+      });
+    }
+  }
+}
+
+
+
 $(document).ready(function () {
 
 
@@ -311,9 +339,9 @@ function drawPlot(circleData) {
 
         var resultDict = jQuery.parseJSON(data);        
 
-        d3.select('#x_avgstat').text("avg x: " + resultDict["avgx"]);
+        d3.select('#x_avgstat').text(Math.round(resultDict["avgx"]));
         
-        d3.select('#y_avgstat').text("avg y: " + resultDict["avgy"]);
+        d3.select('#y_avgstat').text(Math.round(resultDict["avgy"]));
 
         d3.select('#slope_all').text(resultDict["slope"]);
 
@@ -496,9 +524,9 @@ function up() {
 
         var resultDict = jQuery.parseJSON(data);        
 
-        d3.select('#x_avgstat').text("avg x: " + resultDict["avgx"]);
+        d3.select('#x_avgstat').text("" + Math.round(resultDict["avgx"]));
         
-        d3.select('#y_avgstat').text("avg y: " + resultDict["avgy"]);
+        d3.select('#y_avgstat').text("" + Math.round(resultDict["avgy"]));
 
         d3.select('#slope_selected').text(resultDict["slope"]);
 
@@ -510,12 +538,12 @@ function up() {
         //d3.select('#x_medianstat').text("median x: " + data);
 
 
+        //paint selected regression line in green
+        //DEBUG
+
         a = resultDict["intercept"];
         b = resultDict["slope"];
 
-
-
-        //The data for our line
         var reglineX1 = minx;
         var reglineY1 = minx * b + a;
 
@@ -551,12 +579,13 @@ function up() {
             .attr("stroke-width", 2)
             .attr("fill", "none")
             .attr("id","selectedregline");
+
     });
 
 
 
 
-    d3.select('#count').text("selected: " + selected_xy.length);
+    d3.select('#count').text(selected_xy.length);
 
 
     d3.select('#upflag').text("up  " + "x : " + curY + " y: " + curY);
