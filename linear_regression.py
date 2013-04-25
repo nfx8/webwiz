@@ -84,9 +84,20 @@ class dataset:
         print 'sumX: %5.3f  sumY: %5.3f   sumXY: %5.3f    sumXX: %5.3f   sum YY: %5.3f' \
         %(self.sumX(),self.sumY(),self.sumXY(),self.sumXX(),self.sumYY())
 
+    def as_dict(self):
+        """ as dict for JSON readability """
+        d = list()
+        for p in self.datapoints:
+            d.append({'x':p.x,'y':p.y})
+        return d
+
     def n(self):
         return len(self.datapoints)        
 
+
+def sample_data_xy():
+    dataset = sample_data()
+    return dataset.as_dict()
 
 def sample_data():
     data = []

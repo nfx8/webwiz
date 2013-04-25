@@ -6,33 +6,10 @@
 
   statistics are calculated by passing values to the server via JSON format
 
+
+//TODO datafunctions need some clean up
+
 */
-
-
-function kde(sample) {
-  /* Epanechnikov kernel */
-  function epanechnikov(u) {
-    return Math.abs(u) <= 1 ? 0.75 * (1 - u*u) : 0;
-  };
-
-  var kernel = epanechnikov;
-  return {
-    scale: function(h) {
-      kernel = function (u) { return epanechnikov(u / h) / h; };
-      return this;
-    },
-
-    points: function(points) {
-      return points.map(function(x) {
-        var y = pv.sum(sample.map(function (v) {
-            alert(v);
-          return kernel(x - v);
-        })) / sample.length;
-        return {x: x, y: y};
-      });
-    }
-  }
-}
 
 
 
@@ -47,18 +24,9 @@ $(document).ready(function () {
     }, false);
 
 
+    //start with a black container
+
     resetContainer();
-
-
-    /*
-      $.get("/data/",function (data){
-          
-          var resultDict = jQuery.parseJSON(data);
-                   
-          drawPlot(resultDict);
-      });
-*/
-
 
 
 });
@@ -436,7 +404,7 @@ function move() {
         // only brush if mouse is down
 
         // custom brush function
-        // d3 has it's own brush though
+        // (d3 has it's own brush which is not used here)
 
 
         //set min and max
@@ -463,32 +431,181 @@ function move() {
         var miny = startY < curY ? startY : curY;
         var maxy = startY < curY ? curY : startY;
 
-
-        // select based on x y scaled coordinates
-        // map data to mouse coords and compare those to actual mouse movements
-        selected_circles = circles.select(function (d, i) {
-
-            var hit = xscale(d["x"]) > minx && xscale(d["x"]) < maxx && yscale(d["y"]) > miny && yscale(d["y"]) < (maxy);
-
-            return hit ? this : null;
-        });
-
-
-        selected_xy = [];
-
-        // mark the selection with color
-        selected_circles.style("fill", selectcolor);
-
-
-        selected_circles.each(function (d, i) {
-            selected_xy.push(d);
-        });
-
-
+        highlightCircles(minx,maxx,miny,maxy);
     }
 
 }
 
+
+function highlightCircles(minx,maxx,miny,maxy){
+
+    // select based on x y scaled coordinates
+    // map data to mouse coords and compare those to actual mouse movements
+    selected_circles = circles.select(function (d, i) {
+
+        var hit = xscale(d["x"]) > minx && xscale(d["x"]) < maxx && yscale(d["y"]) > miny && yscale(d["y"]) < (maxy);
+
+        return hit ? this : null;
+    });
+
+
+    selected_xy = [];
+
+    // mark the selection with color
+    selected_circles.style("fill", selectcolor);
+
+
+    selected_circles.each(function (d, i) {
+        selected_xy.push(d);
+    });
+    
+
+}
+
+function highlightAverage(){
+        // select based on x y scaled coordinates
+    // map data to mouse coords and compare those to actual mouse movements
+
+   var sumx = d3.sum($.map(all_xy, function (d) {
+        return d.x;
+    }));
+
+   var avgx = sumx / all_xy.length;
+    
+   var sumy = d3.sum($.map(all_xy, function (d) {
+        return d.y;
+    }));
+
+   var avgy = sumy / all_xy.length;
+
+   var maxx = d3.max($.map(all_xy, function (d) {
+        return d.x;
+    }));
+    var minx = d3.min($.map(all_xy, function (d) {
+        return d.x;
+    }));
+    var maxy = d3.max($.map(all_xy, function (d) {
+        return d.y;
+    }));
+    var miny = d3.min($.map(all_xy, function (d) {
+        return d.y;
+    }));
+
+   //remove
+
+   graphLine((avgx),(miny),(avgx),(maxy), "blue", "havg");
+    graphLine((minx),(avgy),(maxx),(avgy), "blue", "havg");
+
+
+
+}
+
+function randomHist(){
+
+    var n = 1000, // number of trials
+    m = 10,    // number of random variables
+    data = [];
+
+    // Generate an Irwin-Hall distribution.
+    for (var i = 0; i < n; i++) {
+      for (var s = 0, j = 0; j < m; j++) {
+        s += Math.random();
+      }
+      data.push(s);
+    }
+
+    var histogram = d3.layout.histogram()
+        (data);
+
+
+    var x = d3.scale.ordinal()
+        .domain(histogram.map(function(d) { return d.x; }))
+        .rangeRoundBands([0, w]);
+
+    var y = d3.scale.linear()
+        .domain([0, d3.max(histogram.map(function(d) { return d.y; }))])
+        .range([0, h]);
+
+
+    svgContainer.selectAll("rect")
+        .data(histogram)
+      .enter().append("rect")
+        .attr("width", x.rangeBand())
+        .attr("x", function(d) { return x(d.x); })
+        .attr("y", function(d) { return h - y(d.y); })
+        .attr("height", function(d) { return y(d.y); })
+        .attr("fill", "steelblue");
+
+
+
+}
+
+function plotFaithFul(){
+    resetContainer();
+
+    // Based on http://bl.ocks.org/900762 by John Firebaugh
+d3.json("/static/faithful.json", function(faithful) {
+
+    data = faithful;
+
+    var circleData = [];
+    for (var i = 0; i < data.length; i++) {
+
+            d = {
+                "x": i,
+                "y": data[i],
+            };
+
+            circleData.push(d);
+        
+    }
+
+    drawPlot(circleData);
+
+  
+      var x = d3.scale.linear().domain([30, 110]).range([0, w]);
+      bins = d3.layout.histogram().frequency(false).bins(x.ticks(50))(data),
+      max = d3.max(bins, function(d) { return d.y; }),
+      y = d3.scale.linear().domain([0, .1]).range([0, h]),
+      kde = science.stats.kde().sample(data);
+
+
+  
+  var bars = svgContainer.selectAll("g.bar")
+      .data(bins)
+    .enter().append("g")
+      .attr("class", "bar")
+      .attr("transform", function(d, i) {
+        return "translate(" + x(d.x) + "," + (h - y(d.y)) + ")";
+      }
+
+      );
+
+
+  bars.append("rect")
+      .attr("fill", "steelblue")
+      .attr("width", function(d) { return x(d.dx + 30) - 1; })
+      .attr("height", function(d) { return y(d.y); });
+ 
+
+/*
+//kde kernel
+
+  var line = d3.svg.line()
+      .x(function(d) { return x(d[0]); })
+      .y(function(d) { return h - y(d[1]); });
+
+  svgContainer.selectAll("path")
+      .data(d3.values(science.stats.bandwidth))
+    .enter().append("path")
+      .attr("d", function(h) {
+        return line(kde.bandwidth(h)(d3.range(10, 200, .3)));        
+      })
+      .fillStyle("#aaa");
+*/    
+
+});
+}
 
 
 function up() {
@@ -539,7 +656,6 @@ function up() {
 
 
         //paint selected regression line in green
-        //DEBUG
 
         a = resultDict["intercept"];
         b = resultDict["slope"];
@@ -550,35 +666,8 @@ function up() {
         var reglineX2 = maxx;
         var reglineY2 = maxx * b + a;
 
-        var lineData = [{
-                "x": reglineX1,
-                "y": reglineY1
-            }, {
-                "x": reglineX2,
-                "y": reglineY2
-            }
-        ];
-
-        
-        var lineFunction = d3.svg.line()
-            .x(function (d) {
-            return xscale(d.x);
-        })
-            .y(function (d) {
-            return yscale(d.y);
-        })
-            .interpolate("linear");
-
-
         svgContainer.select('#selectedregline').remove();
-
-        
-        var lineGraph = svgContainer.append("path")
-            .attr("d", lineFunction(lineData))
-            .attr("stroke", "green")
-            .attr("stroke-width", 2)
-            .attr("fill", "none")
-            .attr("id","selectedregline");
+        graphLine(reglineX1,reglineY1,reglineX2,reglineY2, "green","selectedregline");
 
     });
 
@@ -600,6 +689,34 @@ function up() {
     //setTimeout(resetInfo, 1000);
 }
 
+function graphLine(x1,y1,x2,y2,color,id){
+       var lineData = [{
+                "x": x1,
+                "y": y1
+            }, {
+                "x": x2,
+                "y": y2
+            }
+        ];
+      
+        var lineFunction = d3.svg.line()
+            .x(function (d) {
+            return xscale(d.x);
+        })
+            .y(function (d) {
+            return yscale(d.y);
+        })
+            .interpolate("linear");
+
+      
+        var lineGraph = svgContainer.append("path")
+            .attr("d", lineFunction(lineData))
+            .attr("stroke", color)
+            .attr("stroke-width", 2)
+            .attr("fill", "none")
+            .attr("id",id);   
+
+}
 
 function resetInfo() {
     d3.select('#upflag').text("");
@@ -669,3 +786,31 @@ function randomData() {
 
 }
 */
+
+
+function kde(sample) {
+  /* Epanechnikov kernel */
+  function epanechnikov(u) {
+    return Math.abs(u) <= 1 ? 0.75 * (1 - u*u) : 0;
+  };
+
+  var kernel = epanechnikov;
+  return {
+    scale: function(h) {
+      kernel = function (u) { return epanechnikov(u / h) / h; };
+      return this;
+    },
+
+    points: function(points) {
+      return points.map(function(x) {
+        var y = pv.sum(sample.map(function (v) {
+
+          return kernel(x - v);
+
+        })) / sample.length;
+        return {x: x, y: y};
+      });
+    }
+  }
+}
+

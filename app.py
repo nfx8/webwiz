@@ -54,6 +54,11 @@ def get_data():
     """ get data from server """
     return json.dumps(random_data(20))
 
+@app.route('/sampledata/')
+def get_sample_data():
+    """ get data from server """
+    rd = {'values':sample_data_xy()}
+    return json.dumps(rd)
 
 @app.route('/dist/',methods=['POST'])
 def dist():
