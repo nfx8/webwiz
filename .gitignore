@@ -1,2 +1,4 @@
 .DS_STORE
 .pyc
+.log
+requirements.txt

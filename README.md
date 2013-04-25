@@ -9,8 +9,9 @@ Requirements:
 
 * python
 * flask
-* d3.js
+* gunicorn
 * jquery
+* d3.js
 * science-js
 * flask-bootstrap
 
