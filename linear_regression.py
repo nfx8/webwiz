@@ -102,7 +102,7 @@ def sample_data_xy():
 def sample_data():
     data = []
     #mockup dataset from http://en.wikipedia.org/wiki/Simple_linear_regression
-    with open('simpledata.csv','r') as f:               
+    with open('/static/simpledata.csv','r') as f:               
         for line in f.readlines():
             drow = [float(x) for x in line.split('|')]
             data.append(datapoint(drow))
