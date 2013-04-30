@@ -106,11 +106,19 @@ function gaussianData() {
     var yoff = 20;
     var xvel = 60;
     var yvel = 50;
-    for (var i = 0; i < 40; i++) {
 
-        var j = (i - 20) / 4;
-        var x = j * 70 + 350;
-        var y = gauss.pdf(j);
+    var xscale = d3.scale.linear().domain([-10, 10]).range([0,500]);
+    var yscale = d3.scale.linear().domain([-10, 10]).range([0,500]);
+
+    for (var i = -3; i < 3; i+=0.1) {
+
+        //var j = (i - 20) / 4;
+        //var x = j * 70 + 350;
+        x = xscale(i);
+        
+        var y = gauss.pdf(i);
+
+        alert(y);
 
         if ((x < w) && (y < h)) {
 

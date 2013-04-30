@@ -24,24 +24,45 @@ app = Flask(__name__)
 Bootstrap(app)
 app.config['BOOTSTRAP_USE_CDN'] = True
 
+
+#3 items
+#rounte, caption internal_name
 nav_bar = [
-('/main/', 'main', 'main'),
+('/main/', 'main', 'graph'),
+('/play/', 'play', 'play'),
 ('/about/', 'about', 'about')]
 
+start_with_teaser = False
 
 #--- main views
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    """catch all paths here"""
+    if path == "":
+        if start_with_teaser:
+            return render_template('start.html')
+        else:
+            return create_view('main')
 
-@app.route('/')
-def start():
-    return render_template('start.html')
 
-@app.route('/main/')
-def demo():
-    return render_template('main.html',navigation_bar=nav_bar,active_page="main")
+    path_names = [x[0] for x in nav_bar]
+    nav_dict = {path: (name,caption) for (path, name, caption) in nav_bar}
 
-@app.route('/about/')
-def about():
-    return render_template('about.html',navigation_bar=nav_bar,active_page="about")
+    #route to the main view
+    path = '/' + path
+    if path in nav_dict.keys():        
+        name = nav_dict[path][0]
+        return create_view(name)
+    else:
+        return 'path: %s not found paths' % (path,nav_names)
+
+    
+
+def create_view(viewname):
+    """create standard view"""
+    return render_template(viewname + '.html',navigation_bar=nav_bar,active_page=viewname)
+
 
 
 
@@ -76,7 +97,7 @@ def skewdist():
         vals = json.loads(request.form['vals'])
         rd = {'values':    random_data_skew(vals["beta"])}
         s = json.dumps(rd)
-        return s 
+        return s
 
 @app.route('/stat/<statname>/',methods=['POST'])
 def show_stat_name(statname):
